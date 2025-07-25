@@ -7,6 +7,12 @@ with open('../frontend_config.json', 'r') as config_file:
 
 AUTH_PREFIX = conf.get('AUTH_PREFIX')
 
+
+
+'''
+Add email and password for user_1 and user_2
+password: Asdf1111 like this.
+'''
 user_1 = {
     "name": "test user 1",
     "test_email": "",

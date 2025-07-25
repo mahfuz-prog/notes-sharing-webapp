@@ -8,8 +8,7 @@ with open('../frontend_config.json', 'r') as config_file:
 # Fixture for the base URL of the API
 @pytest.fixture
 def api_base_url():
-    # return conf.get("SERVER_ADDR")
-    return "http://34.123.176.182/api-v1"
+    return conf.get("SERVER_ADDR")
 
 
 # Fixture for the API client (requests session)
