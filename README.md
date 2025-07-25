@@ -1,5 +1,8 @@
 # Note Sharing Application
 
+## High-Level Architecture
+<img width="900" height="1093" alt="notes-sharing" src="https://github.com/user-attachments/assets/2d1001c7-d592-4f5b-a59e-bbe64d601042" />
+
 ## Overview
 
 This project is a unique web application that allows authenticated users to create and securely share an unlimited number of notes. Each note can be protected with an optional PIN, ensuring privacy. The core innovation lies in generating easy-to-remember and shareable URLs, making content accessible from any device across the internet. This application demonstrates a robust full-stack development approach, combining a powerful Flask backend with a dynamic Vue.js frontend, deployed on a Linux VM in Google Cloud.
