@@ -1,7 +1,7 @@
 # Note Sharing Application
 
 ## High-Level Architecture
-<img width="900" height="1093" alt="notes-sharing" src="https://github.com/user-attachments/assets/2d1001c7-d592-4f5b-a59e-bbe64d601042" />
+<img width="900" height="1093" alt="notes-sharing" src="https://github.com/user-attachments/assets/726617ae-dfe2-4807-afb1-559ec52c88c3" />
 
 ## Overview
 
@@ -237,3 +237,4 @@ sudo touch /var/log/test/test.out.log
 sudo supervisorctl reload		# start running the application
 sudo supervisorctl status		# check the status of supervisor
 ```
+
