@@ -29,7 +29,6 @@ const note = ref({
 const payload = ref({
   "username": route.params.username,
   "note_id": route.params.id,
-  "pin": ""
 })
 
 // date formate
@@ -56,18 +55,18 @@ try {
   if (!hasPreRequestError.value) {
     const { data } = await axios.post('/main/single-note/', payload.value)
 
-    // this message contain pin required note
-    if (data.message) {
-      pinRequired.value = true
-    } else {
-      note.value.username = data.username
-      note.value.date = getDate(data.date)
-      note.value.title = data.title
-      note.value.text = data.text
-    }
+    note.value.username = data.username
+    note.value.date = getDate(data.date)
+    note.value.title = data.title
+    note.value.text = data.text
   }
 } catch (err) {
-  throw err
+  // pin required note
+  if (err.response && err.response.status === 401) {
+    pinRequired.value = true
+  } else {
+    throw err
+  }
 }
 
 
