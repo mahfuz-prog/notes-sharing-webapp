@@ -1,10 +1,6 @@
 import { reactive, readonly } from "vue"
 
-// configuration file
-// import config from '/etc/frontend_config.json'
-
-// test
-import config from "../../frontend_config.json"
+import config from "../config.json"
 
 const authState = reactive({
 	token: localStorage.getItem('token'),

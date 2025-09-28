@@ -20,16 +20,15 @@ class Config:
     # jwt
     JWT_TIMEOUT_MINUTES = int(os.getenv("JWT_TIMEOUT_MINUTES"))
 
+    # user
     MAX_NAME_LENGTH = 20
     MIN_NAME_LENGTH = 3
-    MAX_EMAIL_LENGTH = 254
-    MIN_EMAIL_LENGTH = 5
-    EMAIL_REGEX = ""
     OTP_LENGTH = 6
     MIN_PASS_LENGTH = 8
     MAX_PASS_LENGTH = 20
-    PASSWORD_REGEX = ""
+    PASSWORD_REGEX = r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,20}$"
 
+    # note
     MAX_NOTE_ID_LENGTH = 7
     MIN_TITLE_LENGTH = 1
     MAX_TITLE_LENGTH = 100

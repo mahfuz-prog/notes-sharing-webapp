@@ -125,7 +125,7 @@ const save = async() => {
         "text": store.tempNoteState.text,
         "pin": store.tempNoteState.pin
       }
-      const { data } = await axios.post('/notes/update-note/', payload, { headers: store.authActions.getAuthorizationHeader() })
+      const { data } = await axios.put('/notes/update-note/', payload, { headers: store.authActions.getAuthorizationHeader() })
         // add updated data in store map
       store.notesStateActions.updateNote(data.id, data.title, data.text, data.pin)
       store.activeNoteActions.setActiveNote(data.id, data.title, data.text, store.activeNoteState.dateCreated, data.pin)

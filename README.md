@@ -39,7 +39,7 @@ This project leverages a modern tech stack to deliver a secure and great user ex
 
 * **JWT (JSON Web Tokens):** Employed for secure API authentication and authorization, enabling stateless user sessions.
 
-* **Redis:** An in-memory data structure store, used for cahcing otp verification code.
+* **Redis:** An in-memory data structure store.
 
 ### Project Structure - Flask (`flaskapp/`)
 
@@ -105,6 +105,21 @@ The backend API endpoints are tested using `Pytest` to ensure robust handling of
 
 * **Gunicorn:** A Python WSGI HTTP Server for UNIX, used to run the Flask application in a production environment.
 
+
+# Export .env
+### variables
+```sh
+SECRET_KEY=
+AUTH_PREFIX=basic
+SQLALCHEMY_DATABASE_URI=sqlite:///project.db
+EMAIL_USER=
+EMAIL_PASS=
+JWT_TIMEOUT_MINUTES=120
+REDIS_HOST=localhost
+REDIS_PORT=6379
+REDIS_DB=0
+ORIGIN=http://localhost:5173
+```
 
 # Server Configuration
 ### Nginx configuration

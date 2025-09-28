@@ -1,52 +1,78 @@
+import json
 import logging
-from pydantic import ValidationError
-from flask import request
+from typing import Union, Tuple
+from flask import jsonify, Response
 from sqlalchemy import func
 from flaskapp import db
-from flaskapp import redis_client
+from flaskapp.caching import redis_client, RedisKeys
 from flaskapp.db_models import User, Notes
 from flaskapp.main import model
+from flaskapp.utils import response_body_validator
 from flaskapp.exceptions import (
     InternalServerError,
-    UsernameError,
     UserNotFoundError,
-    RequestJsonError,
     NoteNotFound,
     NotePinMismatchError,
     NotePinRequiredError,
 )
 
 
-def homepage_stats() -> dict:
+# total user cout
+def user_count() -> int:
+    cache_key = RedisKeys.TOTAL_USER
+    total_user = redis_client.get(cache_key)
+    if total_user:
+        return int(total_user)
+
+    total_user = User.query.count()
+    redis_client.setex(cache_key, 60 * 60, str(total_user))
+    return total_user
+
+
+# total note count
+def note_count() -> int:
+    cache_key = RedisKeys.TOTAL_NOTE
+    total_note = redis_client.get(cache_key)
+    if total_note:
+        return int(total_note)
+
+    total_note = Notes.query.count()
+    redis_client.setex(cache_key, 60 * 60, str(total_note))
+    return total_note
+
+
+# total char in all notes
+def total_char() -> int:
+    cache_key = RedisKeys.TOTAL_CHAR
+    total_char = redis_client.get(cache_key)
+    if total_char:
+        return int(total_char)
+
+    char_sum = (
+        db.session.query(
+            func.sum(func.length(Notes.title) + func.length(Notes.text))
+        ).scalar()
+    ) or 0
+    redis_client.setex(cache_key, 60 * 60, str(char_sum))
+    return char_sum
+
+
+def homepage_stats() -> Union[Response, Tuple[Response, int]]:
     try:
-        total_user = User.query.count()
-        total_notes = Notes.query.count()
-
-        total_char_cached = redis_client.get("total_char")
-        if total_char_cached:
-            total_char_value = int(total_char_cached)
-        else:
-            char_sum = (
-                db.session.query(
-                    func.sum(func.length(Notes.title) + func.length(Notes.text))
-                ).scalar()
-            ) or 0
-
-            redis_client.setex("total_char", 600, str(char_sum))  # cache for 10 minutes
-            total_char_value = char_sum
-
-        return {
-            "totalUser": total_user,
-            "totalNotes": total_notes,
-            "totalChar": total_char_value,
-        }
+        return jsonify(
+            {
+                "totalUser": user_count(),
+                "totalNotes": note_count(),
+                "totalChar": total_char(),
+            }
+        ), 200
     except Exception as e:
         logging.error(f"Failed to load homepage stats. Error: {str(e)}")
         raise InternalServerError()
 
 
 # query a user by username
-def get_user(username: str) -> User:
+def get_user_by_username(username: str) -> User:
     try:
         user = User.query.filter_by(username=username).first()
         if user is None:
@@ -60,16 +86,15 @@ def get_user(username: str) -> User:
         raise InternalServerError()
 
 
-def get_user_note_list(username: str) -> list:
-    # Validate username
-    try:
-        validated_username = model.UsernameValidator(username=username)
-        username = validated_username.username
-    except ValidationError as e:
-        logging.error(f"Failed to validate username. Error: {str(e)}")
-        raise UsernameError()
+def get_user_note_list(username: str) -> Union[Response, Tuple[Response, int]]:
+    validated = model.PublicProfileRequest(username=username)
+    user = get_user_by_username(validated.username)
 
-    user = get_user(username)
+    cache_key = RedisKeys.user_notes(validated.username)
+    # cache hit return notes
+    cached_notes = redis_client.get(cache_key)
+    if cached_notes:
+        return jsonify(json.loads(cached_notes)), 200
 
     notes_data = []
     if user.notes:
@@ -78,18 +103,21 @@ def get_user_note_list(username: str) -> list:
                 {
                     "id": note.id,
                     "title": note.title,
-                    "dateCreated": note.date_created,
+                    "dateCreated": note.date_created.isoformat(),
                     "isLocked": bool(note.pin),
                 }
             )
 
-    return notes_data
+    # cache miss save notes in redis
+    redis_client.set(cache_key, json.dumps(notes_data))
+
+    return jsonify(notes_data), 200
 
 
 # get a single not by id
-def get_note(note_id: int) -> Notes:
+def get_note_by_id(note_id: int) -> Notes:
     try:
-        note = Notes.query.get(note_id)
+        note = db.session.get(Notes, note_id)
         if note is None:
             logging.warning(f"Note not found for note_id={note_id}")
             raise NoteNotFound()
@@ -101,14 +129,32 @@ def get_note(note_id: int) -> Notes:
         raise InternalServerError()
 
 
-def get_single_note() -> dict:
-    try:
-        validated = model.SingleNoteRequest(**request.get_json())
-    except ValidationError as e:
-        logging.error(f"Invalid request body. Error: {str(e)}")
-        raise RequestJsonError()
+def get_single_note() -> Union[Response, Tuple[Response, int]]:
+    validated = response_body_validator(model.SingleNoteRequest)
 
-    note = get_note(int(validated.note_id))
+    cache_key = RedisKeys.single_note(validated.note_id)
+    # cache hit return note
+    cached_note = redis_client.get(cache_key)
+    if cached_note:
+        note_data = json.loads(cached_note)
+
+        # Validate PIN for cached notes
+        if note_data.get("isLocked"):
+            if not validated.pin:
+                logging.warning(f"Pin required for note_id: {note_data['id']}")
+                raise NotePinRequiredError()
+            if note_data["pin"] != validated.pin:
+                logging.warning(
+                    f"Pin mismatch for note_id={note_data['id']}: provided={validated.pin}"
+                )
+                raise NotePinMismatchError()
+
+        # remove pin and return note
+        note_data.pop("pin", None)
+        return jsonify(note_data), 200
+
+    # cache miss
+    note = get_note_by_id(int(validated.note_id))
 
     # if note has a pin
     if note.pin:
@@ -117,15 +163,27 @@ def get_single_note() -> dict:
             logging.warning(f"Pin required for note_id: {note.id}")
             raise NotePinRequiredError()
 
+        # pin dosen't match
         if note.pin != validated.pin:
             logging.warning(
                 f"Pin mismatch for note_id={note.id}: provided={validated.pin}"
             )
             raise NotePinMismatchError()
 
-    return {
+    note_data = {
         "username": note.author.username,
         "title": note.title,
         "text": note.text,
-        "date": note.date_created,
+        "date": note.date_created.isoformat(),
+        "isLocked": bool(note.pin),
+        "pin": note.pin,
     }
+
+    # cache note
+    redis_client.set(cache_key, json.dumps(note_data))
+
+    # Return without pin and locked status
+    note_data.pop("pin", None)
+    note_data.pop("isLocked", None)
+
+    return jsonify(note_data), 200

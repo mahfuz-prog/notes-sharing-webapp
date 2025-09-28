@@ -1,5 +1,3 @@
-import os
-import redis
 from flask import Flask
 from flask_mail import Mail
 from flask_cors import CORS
@@ -17,21 +15,10 @@ mail = Mail()
 db = SQLAlchemy()
 bcrypt = Bcrypt()
 
-REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
-REDIS_PORT = int(os.getenv("REDIS_PORT", 6379))
-REDIS_DB = int(os.getenv("REDIS_DB", 0))
 
-redis_client = redis.Redis(
-    host=REDIS_HOST,
-    port=REDIS_PORT,
-    db=REDIS_DB,
-    decode_responses=True,  # store strings not bytes
-)
-
-
-def create_app():
+def create_app(config_class: Config):
     app = Flask(__name__)
-    app.config.from_object(Config)
+    app.config.from_object(config_class)
 
     db.init_app(app)
     mail.init_app(app)
@@ -48,7 +35,7 @@ def create_app():
     register_error_handlers(app)
 
     # Cross-Origin Resource Sharing
-    # CORS(app, origins=[os.getenv("ORIGIN")], methods=["GET", "POST"])
+    # CORS(app, origins=[os.getenv("ORIGIN", "*")], methods=["GET", "POST"])
     CORS(app)
 
     return app

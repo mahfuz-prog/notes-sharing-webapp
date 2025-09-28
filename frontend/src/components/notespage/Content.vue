@@ -63,7 +63,7 @@ const deleteNote = async(id) => {
   // Set loading state to true
   isDeleting.value = true
   try {
-    const { data } = await axios.post('/notes/delete-note/', { "note_id": id }, { headers: store.authActions.getAuthorizationHeader() })
+    const { data } = await axios.delete(`/notes/delete-note/${id}/`, { headers: store.authActions.getAuthorizationHeader() })
 
     // delete the note from reactive obj
     store.notesStateActions.deleteNote(parseInt(data.id))

@@ -11,7 +11,7 @@ const router = useRouter()
 
 // Form states
 const submitValues = ref({
-  name: "",
+  username: "",
   email: "",
   password: "",
   otp: ""
@@ -26,7 +26,7 @@ let countdownInterval = null
 
 // errors
 const errors = ref({
-  name: '',
+  username: '',
   email: '',
   password: '',
   otp: '',
@@ -37,13 +37,13 @@ const errors = ref({
 // Handles initial sign-up form submission
 const handleSignUpSubmit = async() => {
   // Clear all previous errors
-  errors.value = { name: '', email: '', password: '', otp: '', general: '' }
+  errors.value = { username: '', email: '', password: '', otp: '', general: '' }
 
   let hasError = false
 
   // Validate all fields
-  if (!validateName(submitValues.value.name)) {
-    errors.value.name = 'Only 3-20 characters (a-Z, 0-9, _, -, single space).'
+  if (!validateName(submitValues.value.username)) {
+    errors.value.username = 'Only 3-20 characters (a-Z, 0-9, _, -, single space).'
     hasError = true
   }
   if (!validateEmail(submitValues.value.email)) {
@@ -77,13 +77,12 @@ const handleSignUpSubmit = async() => {
   } catch (err) {
     // username or email conflict
     if (err.response && err.response.status === 409) {
-      // name Conflict
-      if (err.response.data.nameStatus) {
-        errors.value.name = err.response.data.nameStatus
+      const error = err.response.data.error
+      if (error.nameStatus) {
+        errors.value.username = error.nameStatus
       }
-      // email conflict
-      if (err.response.data.emailStatus) {
-        errors.value.email = err.response.data.emailStatus
+      if (error.emailStatus) {
+        errors.value.email = error.emailStatus
       }
       return
     }
@@ -169,8 +168,8 @@ const startCountdown = () => {
     <!-- user form -->
     <form @submit.prevent="handleSignUpSubmit" v-if="formStep === 'signup'">
       <h4>Create Account</h4>
-      <input type="text" v-model.trim="submitValues.name" placeholder="Your Name" required :disabled="isLoading" />
-      <span v-if="errors.name">● {{ errors.name }}</span>
+      <input type="text" v-model.trim="submitValues.username" placeholder="Your Name" required :disabled="isLoading" />
+      <span v-if="errors.username">● {{ errors.username }}</span>
       <input type="email" v-model.trim="submitValues.email" placeholder="Your Email" required :disabled="isLoading" />
       <span v-if="errors.email">● {{ errors.email }}</span>
       <input type="password" v-model.trim="submitValues.password" placeholder="Password" required :disabled="isLoading" />

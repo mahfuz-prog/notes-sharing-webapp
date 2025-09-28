@@ -1,26 +1,19 @@
 from pydantic import BaseModel, constr
 from flaskapp.config import Config
 
+username_validator = constr(
+    strip_whitespace=True,
+    min_length=Config.MIN_NAME_LENGTH,
+    max_length=Config.MAX_NAME_LENGTH,
+)
 
-class UsernameValidator(BaseModel):
-    username: constr(
-        strip_whitespace=True,
-        min_length=Config.MIN_NAME_LENGTH,
-        max_length=Config.MAX_NAME_LENGTH,
-    )
 
-    def __init__(self, **data):
-        if "username" in data:
-            data["username"] = data["username"].replace(" ", "-").lower()
-        super().__init__(**data)
+class PublicProfileRequest(BaseModel):
+    username: username_validator
 
 
 class SingleNoteRequest(BaseModel):
-    username: constr(
-        min_length=Config.MIN_NAME_LENGTH,
-        max_length=Config.MAX_NAME_LENGTH,
-        strip_whitespace=True,
-    )
+    username: username_validator
     note_id: constr(max_length=Config.MAX_NOTE_ID_LENGTH, strip_whitespace=True)
     pin: (
         constr(

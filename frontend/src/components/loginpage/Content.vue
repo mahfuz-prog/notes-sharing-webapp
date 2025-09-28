@@ -65,7 +65,7 @@ const submitForm = async() => {
 
   } catch (err) {
     // Handle specific API errors
-    if (err.response) {
+    if (err.response && err.response.status == 401) {
       errors.value.general = "Invalid credentials! Please try again."
       return
     }
