@@ -1,5 +1,0 @@
-{
-	"AUTH_PREFIX":"basic",
-	"SERVER_ADDR":"http://localhost:5000/api-v1",
-	"FRONTEND":"http://localhost:5173"
-}

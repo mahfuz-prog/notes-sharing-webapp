@@ -1,11 +1,14 @@
 import { reactive, readonly } from "vue"
 
-import config from "../config.json"
+// environment variable
+const SERVER_ADDR = import.meta.env.VITE_SERVER_ADDR
+const FRONTEND = import.meta.env.VITE_FRONTEND
+const AUTH_PREFIX = import.meta.env.VITE_AUTH_PREFIX
 
 const authState = reactive({
 	token: localStorage.getItem('token'),
-	SERVER_ADDR: config.SERVER_ADDR,
-	FRONTEND: config.FRONTEND,
+	SERVER_ADDR: SERVER_ADDR,
+	FRONTEND: FRONTEND,
 	username: localStorage.getItem('username')
 })
 
@@ -17,7 +20,7 @@ const authActions = {
     },
 
     getAuthorizationHeader() {
-        return { 'Authorization': `${config.AUTH_PREFIX} ${authState.token}` }
+        return { 'Authorization': `${AUTH_PREFIX} ${authState.token}` }
     },
 
     resetAuth() {

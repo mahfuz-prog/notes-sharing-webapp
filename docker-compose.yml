@@ -1,0 +1,51 @@
+name: notes-sharing-api
+
+services:
+  api:
+    image: backend-production
+    container_name: flask-app
+    restart: always
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    env_file:
+      - ./backend/.env
+    environment:
+      - REDIS_URI=redis://redisdb:6379/0
+      - SQLALCHEMY_DATABASE_URI=postgresql://user:password@postgresdb:5432/app
+      - ORIGIN=http://localhost:8080
+      - EMAIL_PASS=emsa greb tzii yiqq
+    depends_on:
+      - redisdb
+      - postgresdb
+    command: gunicorn -w 4 wsgi:app -b 0.0.0.0:5000
+
+  redisdb:
+    image: redis:7.4
+    container_name: redis
+    restart: always
+    ports:
+      - "6379:6379"
+
+  postgresdb:
+    image: postgres:18
+    container_name: postgres
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=app
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+
+  frontend:
+    image: frontend-production
+    container_name: vue-app
+    restart: always
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "8080:80"

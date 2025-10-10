@@ -1,0 +1,44 @@
+name: notes-sharing-api-dev
+
+services:
+  api:
+    image: backend-dev
+    container_name: flask-app
+    restart: always
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    volumes:
+      - "./backend/flaskapp:/backend/flaskapp"
+    env_file:
+      - ./backend/.env
+    environment:
+      - REDIS_URI=redis://redisdb:6379/0
+    depends_on:
+      - redisdb
+    command: python run.py
+
+  redisdb:
+    image: redis:7.4
+    container_name: redis
+    restart: always
+    ports:
+      - "6379:6379"
+
+  frontend:
+    image: frontend-dev
+    container_name: vue-app
+    restart: always
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile-dev
+    ports:
+      - "5173:5173"
+    volumes:
+      - "./frontend:/frontend"
+      - /frontend/node_modules
+    env_file:
+      - ./frontend/.env
+    command: npm run dev -- --host

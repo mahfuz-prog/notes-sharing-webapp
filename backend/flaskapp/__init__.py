@@ -1,11 +1,12 @@
+import os
 from flask import Flask
 from flask_mail import Mail
 from flask_cors import CORS
 from dotenv import load_dotenv
 from flask_bcrypt import Bcrypt
-from flaskapp.config import Config
 from flask_sqlalchemy import SQLAlchemy
 from flaskapp.logging import configure_logging, LogLevels
+
 
 load_dotenv()
 configure_logging(LogLevels.info)
@@ -16,7 +17,7 @@ db = SQLAlchemy()
 bcrypt = Bcrypt()
 
 
-def create_app(config_class: Config):
+def create_app(config_class):
     app = Flask(__name__)
     app.config.from_object(config_class)
 
@@ -35,7 +36,6 @@ def create_app(config_class: Config):
     register_error_handlers(app)
 
     # Cross-Origin Resource Sharing
-    # CORS(app, origins=[os.getenv("ORIGIN", "*")], methods=["GET", "POST"])
-    CORS(app)
+    CORS(app, origins=[os.getenv("ORIGIN", "*")], methods=["GET", "POST"])
 
     return app

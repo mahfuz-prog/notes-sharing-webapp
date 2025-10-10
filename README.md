@@ -10,18 +10,14 @@ This project is a unique web application that allows authenticated users to crea
 ## Key Features
 
 * **Unlimited Note Creation:** Authenticated users can create an unrestricted number of personal notes.
-
 * **PIN Protection:** Each note can be secured with an optional Personal Identification Number (PIN) for an added layer of privacy.
-
 * **Memorable & Shareable URLs:** Notes are accessible via unique, easy-to-remember URLs, facilitating seamless sharing and access across different devices.
-
 * **User Authentication:** Secure user registration and login system.
-
 * **API-Driven Architecture:** A clear separation of concerns with a RESTful API backend serving data to the frontend.
-
 * **Cross-Origin Resource Sharing (CORS):** Configured to allow secure communication between the frontend and backend.
-
 * **Optimized for Larger Screens:** The user interface is primarily designed and optimized for viewing on larger displays.
+* **Dockerized Application:** The entire stack is containerized using Docker for consistent and scalable deployment.
+* **Production-Grade Stack:** Uses PostgreSQL as the production database and Redis for managing high user traffic efficiently.
 
 ## Technologies Used
 
@@ -30,62 +26,47 @@ This project leverages a modern tech stack to deliver a secure and great user ex
 ### Backend (Flask)
 
 * **Flask:** The micro web framework providing the core API structure.
-
 * **Flask-Bcrypt:** For strong password hashing and verification, ensuring user data security.
-
 * **Flask-Mail:** For handling email functionalities (e.g., account verification, password resets - if implemented).
-
 * **Flask-CORS:** Manages Cross-Origin Resource Sharing, enabling secure communication with the Vue.js frontend.
-
 * **JWT (JSON Web Tokens):** Employed for secure API authentication and authorization, enabling stateless user sessions.
-
-* **Redis:** An in-memory data structure store.
+* **SQLAlchemy:** ORM for interacting with the PostgreSQL database.
+* **Redis:** Used as a caching and message broker system to handle high volumes of user requests efficiently.
+* **Logging:** Configured Python’s built-in logging for structured error tracking and debugging.
+* **Gunicorn:** WSGI HTTP server for running the Flask app in production.
 
 ### Project Structure - Flask (`flaskapp/`)
 
-* `app.py`: Main Flask application instance creation and extension initialization.
-
+* `../run.py`: Main Flask application instance creation for development.
+* `../wsgi.py`: Main Flask application instance creation for deployment.
 * `config.py`: Centralized configuration management for the Flask app, database, and email settings.
-
 * `users/`: Blueprint for user authentication and management (`/api-v1/users/`).
-
 * `main/`: Blueprint for general application routes or public endpoints (`/api-v1/main/`).
-
 * `notes/`: Blueprint for note creation, retrieval, updating, and deletion (`/api-v1/notes/`).
 
 ### Frontend (Vue.js)
 
 * **Vue.js 3:** A progressive JavaScript framework for building the interactive user interface.
-
 * **Vue Router:** For client-side routing, enabling single-page application (SPA) navigation.
-
 * **Vue Reactive:** Simple and efficient state management for the application.
-
 * **Axios:** A promise-based HTTP client for making API requests to the Flask backend.
-
 * **CSS:** For custom styling.
 
 ### Project Structure - Vue.js (`src/`)
 
 * `assets/`: Static assets like CSS.
-
 * `views/`: Vue components representing different pages/views of the application.
-
 * `main.js`: Vue.js application entry point, mounting the root component and configuring Axios, Vue Router, and the store.
-
 * `components/`: Reusable Vue components. Different pages are separated into folders within this directory.
-
 * `utils/`: JavaScript helper functions.
-
 * `router/`: Routes definitions for client-side navigation.
-
 * `store/`: Reactive object for simple state management.
 
 ### Database
 
-* **SQLAlchemy:** Used as the ORM to interact with a relational database.
-
-* **Relational Database:** `SQLite` file system database. Stores user accounts, notes information.
+* **PostgreSQL:** Used as the production-grade relational database for storing user accounts and notes securely.
+* **SQLAlchemy:** Provides ORM-based interaction with the database.
+* **Redis:** Used for caching, managing session data, and handling large volumes of user requests to improve performance.
 
 ### Testing
 
@@ -98,30 +79,94 @@ The backend API endpoints are tested using `Pytest` to ensure robust handling of
 ### Deployment
 
 * **Google Cloud Platform (GCP):** The cloud provider used for hosting the application on a Linux Virtual Machine.
-
+* **Docker Compose:** Used to orchestrate multi-container deployment (Flask backend, Vue.js frontend, PostgreSQL, and Redis).
 * **Nginx:** A high-performance web server and reverse proxy, used to serve the frontend and proxy requests to the backend.
-
 * **Free SSL:** Implemented to secure all traffic with HTTPS, ensuring encrypted communication (e.g., using Let's Encrypt).
-
 * **Gunicorn:** A Python WSGI HTTP Server for UNIX, used to run the Flask application in a production environment.
 
 
-# Export .env
-### variables
+# Development
+================================================
+
+## Backend
+### Export `.env` variables
 ```sh
-SECRET_KEY=
+SECRET_KEY=hola
 AUTH_PREFIX=basic
 SQLALCHEMY_DATABASE_URI=sqlite:///project.db
 EMAIL_USER=
 EMAIL_PASS=
 JWT_TIMEOUT_MINUTES=120
-REDIS_HOST=localhost
-REDIS_PORT=6379
-REDIS_DB=0
+REDIS_URI=redis://localhost:6379/0
 ORIGIN=http://localhost:5173
 ```
 
-# Server Configuration
+### Create image & run container application layer
+```sh
+docker build -t backend-dev:latest .
+docker run --name flask-app --env-file .env -p5000:5000 backend-dev
+
+docker exec -it flask-app sh
+
+# create db tables once
+from wsgi import app
+from flaskapp import db
+
+with app.app_context():
+  db.create_all()
+```
+
+### run development environment, docker compose
+```sh
+docker compose -f dev-docker-compose.yml up
+
+docker compose -f dev-docker-compose.yml down
+```
+
+
+## Frontend
+### Export base `.env`
+```sh
+VITE_AUTH_PREFIX=basic
+VITE_SERVER_ADDR=http://localhost:5000/api-v1
+VITE_FRONTEND=http://localhost:5173
+```
+
+### run vue development environment locally
+```sh
+npm install
+npm run dev
+```
+
+
+# Production Service-based architecture
+================================================
+
+Run entire application using docker compose.
+- build the vue app locally
+- In one container nginx + vue build(/dist)
+
+### export `.env.production` for override `.env` in build process
+```sh
+VITE_SERVER_ADDR=http://localhost:5000/api-v1
+VITE_FRONTEND=http://localhost:8080
+```
+
+### build vue app locally
+```sh
+npm run build -- --mode production
+```
+
+### docker compose
+```sh
+docker compose up -d
+docker compose down
+```
+
+
+# Server Configuration on Linux
+================================================
+
 ### Nginx configuration
 
 ```sh

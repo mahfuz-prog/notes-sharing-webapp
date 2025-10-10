@@ -36,3 +36,13 @@ class Config:
     MAX_TEXT_LENGTH = 20000
     MIN_PIN_LENGTH = 3
     MAX_PIN_LENGTH = 8
+
+
+class DevelopmentConfig(Config):
+    DEBUG = True
+    ENV = "development"
+
+
+class ProductionConfig(Config):
+    DEBUG = False
+    ENV = "production"

@@ -4,17 +4,9 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
-REDIS_PORT = int(os.getenv("REDIS_PORT", 6379))
-REDIS_DB = int(os.getenv("REDIS_DB", 0))
+REDIS_URI = os.getenv("REDIS_URI")
 
-
-redis_client = redis.Redis(
-    host=REDIS_HOST,
-    port=REDIS_PORT,
-    db=REDIS_DB,
-    decode_responses=True,
-)
+redis_client = redis.Redis.from_url(REDIS_URI, decode_responses=True)
 
 
 class RedisKeys:
@@ -26,18 +18,18 @@ class RedisKeys:
     TOTAL_NOTE = "total_note"
     TOTAL_CHAR = "total_char"
 
-    @staticmethod
-    def sign_up(email: str) -> str:
-        return RedisKeys.SIGN_UP.format(email=email)
+    @classmethod
+    def sign_up(cls, email: str) -> str:
+        return cls.SIGN_UP.format(email=email)
 
-    @staticmethod
-    def reset_password(email: str) -> str:
-        return RedisKeys.RESET_PASSWORD.format(email=email)
+    @classmethod
+    def reset_password(cls, email: str) -> str:
+        return cls.RESET_PASSWORD.format(email=email)
 
-    @staticmethod
-    def user_notes(username: str) -> str:
-        return RedisKeys.USER_NOTES.format(username=username)
+    @classmethod
+    def user_notes(cls, username: str) -> str:
+        return cls.USER_NOTES.format(username=username)
 
-    @staticmethod
-    def single_note(note_id: str) -> str:
-        return RedisKeys.SINGLE_NOTE.format(note_id=note_id)
+    @classmethod
+    def single_note(cls, note_id: str) -> str:
+        return cls.SINGLE_NOTE.format(note_id=note_id)
