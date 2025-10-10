@@ -163,6 +163,17 @@ docker compose up -d
 docker compose down
 ```
 
+### create database table in backend first time
+```sh
+docker exec -it <container_name> sh
+python
+
+from wsgi import app
+from flaskapp import db
+
+with app.app_context():
+  db.create_all()
+```
 
 # Server Configuration on Linux
 ================================================
