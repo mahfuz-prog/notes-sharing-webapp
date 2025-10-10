@@ -116,14 +116,6 @@ with app.app_context():
   db.create_all()
 ```
 
-### run development environment, docker compose
-```sh
-docker compose -f dev-docker-compose.yml up
-
-docker compose -f dev-docker-compose.yml down
-```
-
-
 ## Frontend
 ### Export base `.env`
 ```sh
@@ -132,12 +124,12 @@ VITE_SERVER_ADDR=http://localhost:5000/api-v1
 VITE_FRONTEND=http://localhost:5173
 ```
 
-### run vue development environment locally
+## run development environment, docker compose
 ```sh
-npm install
-npm run dev
-```
+docker compose -f dev-docker-compose.yml up
 
+docker compose -f dev-docker-compose.yml down
+```
 
 # Production Service-based architecture
 ================================================
@@ -154,6 +146,7 @@ VITE_FRONTEND=http://localhost:8080
 
 ### build vue app locally
 ```sh
+npm install
 npm run build -- --mode production
 ```
 

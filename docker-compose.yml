@@ -39,6 +39,8 @@ services:
       - POSTGRES_DB=app
       - POSTGRES_USER=user
       - POSTGRES_PASSWORD=password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
 
   frontend:
     image: frontend-production
@@ -49,3 +51,6 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8080:80"
+
+volumes:
+  postgres_data:
