@@ -54,13 +54,13 @@ This project leverages a modern tech stack to deliver a secure and great user ex
 
 ### Project Structure - Vue.js (`src/`)
 
-* `assets/`: Static assets like CSS.
+* `../main.js`: Vue.js application entry point, mounting the root component and configuring Axios, Vue Router, and the store.
+* `../store.js`: Reactive object for simple state management.
 * `views/`: Vue components representing different pages/views of the application.
-* `main.js`: Vue.js application entry point, mounting the root component and configuring Axios, Vue Router, and the store.
+* `assets/`: Static assets like CSS.
 * `components/`: Reusable Vue components. Different pages are separated into folders within this directory.
 * `utils/`: JavaScript helper functions.
 * `router/`: Routes definitions for client-side navigation.
-* `store/`: Reactive object for simple state management.
 
 ### Database
 
@@ -298,7 +298,7 @@ sudo touch /var/log/test/test.out.log
 
 ### Run flask server
 ```sh
-sudo supervisorctl reload		# start running the application
-sudo supervisorctl status		# check the status of supervisor
+sudo supervisorctl reload   # start running the application
+sudo supervisorctl status   # check the status of supervisor
 ```
 
