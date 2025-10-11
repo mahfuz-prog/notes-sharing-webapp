@@ -135,6 +135,8 @@ docker compose -f dev-docker-compose.yml down
 ================================================
 
 Run entire application using docker compose.
+- `.env` for backend and frontend
+- update `nginx.conf` in frontend according to backend url
 - build the vue app locally
 - In one container nginx + vue build(/dist)
 
