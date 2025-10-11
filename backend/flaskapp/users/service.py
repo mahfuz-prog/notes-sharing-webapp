@@ -94,6 +94,8 @@ def get_user_by_email(email: str) -> User:
             logging.warning(f"User not found for email={email}")
             raise UserNotFoundError()
         return user
+    except UserNotFoundError:
+        raise
     except Exception as e:
         logging.error(f"Failed to get user. Error: {str(e)}")
         raise InternalServerError()
